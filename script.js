@@ -1,152 +1,142 @@
-// Copter Game Clone (Resimli ve Arka Plan Müzikli)
+// Copter game clone with scrolling background images and obstacles
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const startButton = document.getElementById('startButton');
-canvas.width = 800; // 10 sütun * 30px genişlik
-canvas.height = 400; // 20 satır * 30px yükseklik
-const ROWS = 20;
-const COLS = 10;
-const BLOCK_SIZE = 30;
 
-const pieceImages = [
-    'assets/images/dusman1.png', 'assets/images/dusman2.png', 'assets/images/dusman3.png',
-    'assets/images/dusman4.png', 'assets/images/dusman5.png', 'assets/images/dusman6.png',
-    'assets/images/dusman7.png', 'assets/images/dusman8.png', 'assets/images/dusman9.png'
-].map(src => {
-    const img = new Image();
-    img.src = src;
-    return img;
+canvas.width = 800;
+canvas.height = 400;
+
+// Game variables
+let copterY = canvas.height / 2;
+let copterSpeed = 0;
+const gravity = 0.5;
+const lift = -10;
+const copterSize = 20;
+let score = 0;
+let gameRunning = true;
+
+// Background images
+const backgroundImages = [
+  'background1.jpg',
+  'background2.jpg',
+  'background3.jpg',
+  'background4.jpg',
+];
+const backgroundImageObjects = [];
+backgroundImages.forEach((src) => {
+  const img = new Image();
+  img.src = src;
+  backgroundImageObjects.push(img);
 });
 
-const SHAPES = [
-    [[1, 1, 1, 1]], // I
-    [[1, 1, 1], [0, 1, 0]], // T
-    [[1, 1, 1], [1, 0, 0]], // L
-    [[1, 1, 1], [0, 0, 1]], // J
-    [[1, 1], [1, 1]], // O
-    [[0, 1, 1], [1, 1, 0]], // S
-    [[1, 1, 0], [0, 1, 1]]  // Z
-];
+let backgroundX = 0;
+let currentBackground = 0;
 
-let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-let currentPiece;
-let currentX = 4, currentY = 0;
-let gameOver = false;
-let score = 0;
+// Obstacles
+const obstacles = [];
+const obstacleWidth = 50;
+const obstacleGap = 150;
+const obstacleSpeed = 3;
 
-const bgMusic = new Audio('assets/sounds/background.mp3');
-bgMusic.loop = true;
+function createObstacle() {
+  const obstacleHeight = Math.random() * (canvas.height - obstacleGap);
+  obstacles.push({ x: canvas.width, y: 0, height: obstacleHeight });
+  obstacles.push({ x: canvas.width, y: obstacleHeight + obstacleGap, height: canvas.height - obstacleHeight - obstacleGap });
+}
 
-function newPiece() {
-    let shapeIndex = Math.floor(Math.random() * SHAPES.length);
-    let imageIndex = Math.floor(Math.random() * pieceImages.length);
-    currentPiece = { shape: SHAPES[shapeIndex], image: pieceImages[imageIndex] };
-    currentX = 4;
-    currentY = 0;
-    if (!isValidMove(0, 0)) {
-        gameOver = true;
+// Handle input
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    copterSpeed = lift;
+  }
+});
+
+window.addEventListener('mousedown', () => {
+  copterSpeed = lift;
+});
+
+function update() {
+  if (!gameRunning) return;
+
+  // Update copter
+  copterSpeed += gravity;
+  copterY += copterSpeed;
+
+  if (copterY < 0) copterY = 0;
+  if (copterY + copterSize > canvas.height) {
+    gameOver();
+  }
+
+  // Update background
+  backgroundX -= obstacleSpeed;
+  if (backgroundX <= -canvas.width) {
+    backgroundX = 0;
+    currentBackground = (currentBackground + 1) % backgroundImageObjects.length;
+  }
+
+  // Update obstacles
+  obstacles.forEach((obstacle) => {
+    obstacle.x -= obstacleSpeed;
+  });
+
+  if (obstacles.length > 0 && obstacles[0].x + obstacleWidth < 0) {
+    obstacles.splice(0, 2);
+    score++;
+  }
+
+  if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 200) {
+    createObstacle();
+  }
+
+  // Collision detection
+  obstacles.forEach((obstacle) => {
+    if (
+      copterY < obstacle.y + obstacle.height &&
+      copterY + copterSize > obstacle.y &&
+      obstacle.x < copterSize &&
+      obstacle.x + obstacleWidth > 0
+    ) {
+      gameOver();
     }
+  });
 }
 
-function isValidMove(offsetX, offsetY, rotatedPiece) {
-    let shape = rotatedPiece || currentPiece.shape;
-    return shape.every((row, dy) => 
-        row.every((value, dx) => {
-            let newX = currentX + dx + offsetX;
-            let newY = currentY + dy + offsetY;
-            return !value || (newX >= 0 && newX < COLS && newY < ROWS && !board[newY][newX]);
-        })
-    );
+function gameOver() {
+  gameRunning = false;
+  ctx.fillStyle = 'red';
+  ctx.font = '30px Arial';
+  ctx.fillText('Game Over', canvas.width / 2 - 80, canvas.height / 2);
 }
 
-function rotatePiece() {
-    let rotated = currentPiece.shape[0].map((_, i) => currentPiece.shape.map(row => row[i]).reverse());
-    if (isValidMove(0, 0, rotated)) {
-        currentPiece.shape = rotated;
-    }
-}
+function draw() {
+  // Draw background
+  ctx.drawImage(backgroundImageObjects[currentBackground], backgroundX, 0, canvas.width, canvas.height);
+  ctx.drawImage(backgroundImageObjects[(currentBackground + 1) % backgroundImageObjects.length], backgroundX + canvas.width, 0, canvas.width, canvas.height);
 
-function mergePiece() {
-    currentPiece.shape.forEach((row, dy) => row.forEach((value, dx) => {
-        if (value) board[currentY + dy][currentX + dx] = currentPiece.image;
-    }));
-}
+  // Draw copter
+  ctx.fillStyle = 'black';
+  ctx.fillRect(50, copterY, copterSize, copterSize);
 
-function clearRows() {
-    for (let y = ROWS - 1; y >= 0; y--) {
-        if (board[y].every(cell => cell)) {
-            board.splice(y, 1);
-            board.unshift(Array(COLS).fill(0));
-            score += 100;
-        }
-    }
-}
+  // Draw obstacles
+  ctx.fillStyle = 'green';
+  obstacles.forEach((obstacle) => {
+    ctx.fillRect(obstacle.x, obstacle.y, obstacleWidth, obstacle.height);
+  });
 
-function moveDown() {
-    if (!isValidMove(0, 1)) {
-        mergePiece();
-        clearRows();
-        newPiece();
-    } else {
-        currentY++;
-    }
-}
-
-function moveSideways(direction) {
-    if (isValidMove(direction, 0)) {
-        currentX += direction;
-    }
-}
-
-function drawBoard() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    board.forEach((row, y) => row.forEach((value, x) => {
-        if (value instanceof HTMLImageElement) {
-            ctx.drawImage(value, x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        }
-    }));
-}
-
-function drawPiece() {
-    currentPiece.shape.forEach((row, dy) => row.forEach((value, dx) => {
-        if (value) {
-            ctx.drawImage(currentPiece.image, (currentX + dx) * BLOCK_SIZE, (currentY + dy) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        }
-    }));
-}
-
-function drawScore() {
-    ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
-    ctx.fillText(`Skor: ${score}`, 10, 30);
+  // Draw score
+  ctx.fillStyle = 'black';
+  ctx.font = '20px Arial';
+  ctx.fillText(`Score: ${score}`, 10, 30);
 }
 
 function gameLoop() {
-    if (gameOver) {
-        ctx.fillStyle = 'white';
-        ctx.font = '30px Arial';
-        ctx.fillText('Oyun Bitti', 80, 300);
-        return;
-    }
-    moveDown();
-    drawBoard();
-    drawPiece();
-    drawScore();
-    setTimeout(gameLoop, 500 - Math.min(400, score));
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  update();
+  draw();
+  if (gameRunning) {
+    requestAnimationFrame(gameLoop);
+  }
 }
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') moveSideways(-1);
-    if (e.key === 'ArrowRight') moveSideways(1);
-    if (e.key === 'ArrowUp') rotatePiece();
-    if (e.key === 'ArrowDown') moveDown();
-});
-
-startButton.addEventListener('click', () => {
-    gameOver = false;
-    board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-    score = 0;
-    newPiece();
-    bgMusic.play();
-    gameLoop();
-});
+// Start game
+createObstacle();
+gameLoop();
