@@ -1,41 +1,45 @@
 body {
     margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-image: url('assets/images/copter_background.jpg');
-    background-size: cover;
-    font-family: Arial, sans-serif;
+    background: #000;
 }
 
 #game-container {
-    width: 480px;
-    height: 640px;
     position: relative;
     border: 2px solid #fff;
-    overflow: hidden;
 }
 
 canvas {
     display: block;
+    background: url('background.jpg') repeat-x;
+    background-size: cover;
 }
 
-#startButton {
+#score {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 15px 30px;
+    top: 10px;
+    left: 10px;
+    color: white;
     font-size: 20px;
-    background-color: #28a745;
+    font-family: Arial, sans-serif;
+}
+
+#restartButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    background: #28a745;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    z-index: 10;
 }
 
-#startButton:hover {
-    background-color: #218838;
+#restartButton:hover {
+    background: #218838;
 }
