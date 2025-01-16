@@ -17,7 +17,7 @@ const obstacleGap = 150;
 const obstacleSpeed = 3;
 
 const backgroundImage = new Image();
-backgroundImage.src = 'background.jpg';
+backgroundImage.src = 'background.png';
 
 function createObstacle() {
     const height = Math.random() * (canvas.height - obstacleGap);
