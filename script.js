@@ -9,12 +9,15 @@ const gravity = 0.5;
 const lift = -10;
 const copterSize = 20;
 let score = 0;
-let gameRunning = true;
+let gameRunning = false;
 
 const obstacles = [];
 const obstacleWidth = 50;
 const obstacleGap = 150;
 const obstacleSpeed = 3;
+
+const backgroundImage = new Image();
+backgroundImage.src = 'background.jpg';
 
 function createObstacle() {
     const height = Math.random() * (canvas.height - obstacleGap);
@@ -27,7 +30,13 @@ function resetGame() {
     copterSpeed = 0;
     obstacles.length = 0;
     score = 0;
+    gameRunning = false;
+    document.getElementById('startMessage').style.display = 'block';
+}
+
+function startGame() {
     gameRunning = true;
+    document.getElementById('startMessage').style.display = 'none';
     createObstacle();
     gameLoop();
 }
@@ -39,7 +48,7 @@ function update() {
     copterY += copterSpeed;
 
     if (copterY < 0 || copterY + copterSize > canvas.height) {
-        gameRunning = false;
+        resetGame();
     }
 
     obstacles.forEach((obs) => {
@@ -62,13 +71,14 @@ function update() {
             50 < obs.x + obstacleWidth &&
             50 + copterSize > obs.x
         ) {
-            gameRunning = false;
+            resetGame();
         }
     });
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = 'red';
     ctx.fillRect(50, copterY, copterSize, copterSize);
@@ -91,11 +101,11 @@ function gameLoop() {
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
+        if (!gameRunning) {
+            startGame();
+        }
         copterSpeed = lift;
     }
 });
 
-document.getElementById('restartButton').addEventListener('click', resetGame);
-
-createObstacle();
-gameLoop();
+resetGame();
