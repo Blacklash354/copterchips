@@ -1,4 +1,4 @@
-// Copter Game Clone with Adjustments for Smoother Flying and UI Fixes
+// Copter Game Clone with Styled Obstacles
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -8,6 +8,8 @@ canvas.height = 600; // Fixed height
 // Images
 const helicopterImg = new Image();
 helicopterImg.src = 'assets/images/helicopter.png';
+const obstacleTexture = new Image();
+obstacleTexture.src = 'assets/images/obstacle.png';
 
 // Game variables
 let copterY = canvas.height / 2;
@@ -20,14 +22,14 @@ let bestScore = 0;
 let gameRunning = false;
 let isMousePressed = false;
 const obstacles = [];
-const obstacleWidth = 70; // Wider obstacles
+const obstacleWidth = 70; // Styled obstacle width
 const obstacleGap = 180; // Adjusted gap size
 const obstacleSpeed = 3;
 
 function createObstacle() {
     const height = Math.random() * (canvas.height - obstacleGap - 100) + 50;
-    obstacles.push({ x: canvas.width, y: 0, height, color: '#00FF00' });
-    obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap, color: '#00FF00' });
+    obstacles.push({ x: canvas.width, y: 0, height });
+    obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap });
 }
 
 function resetGame() {
@@ -110,8 +112,12 @@ function draw() {
 
     // Draw obstacles
     obstacles.forEach((obs) => {
-        ctx.fillStyle = obs.color;
-        ctx.fillRect(obs.x, obs.y, obstacleWidth, obs.height);
+        if (obstacleTexture.complete) {
+            ctx.drawImage(obstacleTexture, obs.x, obs.y, obstacleWidth, obs.height);
+        } else {
+            ctx.fillStyle = 'green';
+            ctx.fillRect(obs.x, obs.y, obstacleWidth, obs.height);
+        }
     });
 
     // Draw score UI
