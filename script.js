@@ -1,4 +1,4 @@
-// Copter Game Clone with UI Elements and Screen Adjustments
+// Copter Game Clone with Improved Obstacles and Mouse Control
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -18,6 +18,7 @@ const copterSize = { width: 80, height: 40 };
 let distance = 0;
 let bestScore = 0;
 let gameRunning = false;
+let isMousePressed = false;
 const obstacles = [];
 const obstacleWidth = 50;
 const obstacleGap = 200;
@@ -25,8 +26,13 @@ const obstacleSpeed = 3;
 
 function createObstacle() {
     const height = Math.random() * (canvas.height - obstacleGap - 100) + 50;
-    obstacles.push({ x: canvas.width, y: 0, height });
-    obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap });
+    obstacles.push({ x: canvas.width, y: 0, height, color: getRandomColor() });
+    obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap, color: getRandomColor() });
+}
+
+function getRandomColor() {
+    const colors = ['#00FF00', '#00CC00', '#009900', '#66FF66'];
+    return colors[Math.floor(Math.random() * colors.length)];
 }
 
 function resetGame() {
@@ -46,7 +52,12 @@ function startGame() {
 function update() {
     if (!gameRunning) return;
 
-    copterSpeed += gravity;
+    // Apply gravity or lift based on mouse press
+    if (isMousePressed) {
+        copterSpeed = lift;
+    } else {
+        copterSpeed += gravity;
+    }
     copterY += copterSpeed;
 
     // Check boundaries
@@ -101,8 +112,8 @@ function draw() {
     ctx.drawImage(helicopterImg, 100, copterY, copterSize.width, copterSize.height);
 
     // Draw obstacles
-    ctx.fillStyle = 'green';
     obstacles.forEach((obs) => {
+        ctx.fillStyle = obs.color;
         ctx.fillRect(obs.x, obs.y, obstacleWidth, obs.height);
     });
 
@@ -123,11 +134,11 @@ function gameLoop() {
 
 window.addEventListener('mousedown', () => {
     if (!gameRunning) startGame();
-    copterSpeed = lift;
+    isMousePressed = true;
 });
 
 window.addEventListener('mouseup', () => {
-    copterSpeed += gravity; // Resume gravity when mouse is released
+    isMousePressed = false;
 });
 
 // Initialize game
