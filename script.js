@@ -1,9 +1,16 @@
-// Copter Game Clone with Green Obstacles
+// Copter Game Clone with Centered Layout and Full Black Background
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 canvas.width = 800; // Fixed width
 canvas.height = 600; // Fixed height
+
+document.body.style.margin = '0';
+document.body.style.display = 'flex';
+document.body.style.justifyContent = 'center';
+document.body.style.alignItems = 'center';
+document.body.style.height = '100vh';
+document.body.style.backgroundColor = 'black';
 
 // Images
 const helicopterImg = new Image();
@@ -21,13 +28,16 @@ let gameRunning = false;
 let isMousePressed = false;
 const obstacles = [];
 const obstacleWidth = 40; // Smaller obstacle width
-const obstacleGap = 140; // Reduced gap size
+const obstacleGap = 200; // Adjusted gap size
 const obstacleSpeed = 3;
 
 function createObstacle() {
-    const height = Math.random() * (canvas.height - obstacleGap - 100) + 50;
-    obstacles.push({ x: canvas.width, y: 0, height });
-    obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap });
+    const centerY = Math.random() * (canvas.height - obstacleGap - 100) + 50;
+    const topHeight = centerY - obstacleGap / 2;
+    const bottomHeight = canvas.height - centerY - obstacleGap / 2;
+
+    obstacles.push({ x: canvas.width, y: 0, height: topHeight });
+    obstacles.push({ x: canvas.width, y: canvas.height - bottomHeight, height: bottomHeight });
 }
 
 function resetGame() {
@@ -99,11 +109,6 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw top and bottom borders
-    ctx.fillStyle = 'green';
-    ctx.fillRect(0, 0, canvas.width, 50); // Top border
-    ctx.fillRect(0, canvas.height - 50, canvas.width, 50); // Bottom border
 
     // Draw helicopter
     ctx.drawImage(helicopterImg, 100, copterY, copterSize.width, copterSize.height);
