@@ -3,21 +3,23 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 400;
 
+// Images
+const helicopterImg = new Image();
+helicopterImg.src = 'assets/images/helicopter.png';
+
+// Game variables
 let copterY = canvas.height / 2;
 let copterSpeed = 0;
 const gravity = 0.5;
 const lift = -10;
-const copterSize = 20;
-let score = 0;
-let gameRunning = false;
+const copterSize = { width: 80, height: 40 };
+let distance = 0;
+let bestScore = 0;
 
 const obstacles = [];
 const obstacleWidth = 50;
 const obstacleGap = 150;
 const obstacleSpeed = 3;
-
-const backgroundImage = new Image();
-backgroundImage.src = 'assets/images/background.png';
 
 function createObstacle() {
     const height = Math.random() * (canvas.height - obstacleGap);
@@ -29,83 +31,79 @@ function resetGame() {
     copterY = canvas.height / 2;
     copterSpeed = 0;
     obstacles.length = 0;
-    score = 0;
-    gameRunning = false;
-    document.getElementById('startMessage').style.display = 'block';
-}
-
-function startGame() {
-    gameRunning = true;
-    document.getElementById('startMessage').style.display = 'none';
+    distance = 0;
     createObstacle();
-    gameLoop();
 }
 
 function update() {
-    if (!gameRunning) return;
-
     copterSpeed += gravity;
     copterY += copterSpeed;
 
-    if (copterY < 0 || copterY + copterSize > canvas.height) {
+    // Check boundaries
+    if (copterY < 0 || copterY + copterSize.height > canvas.height) {
         resetGame();
     }
 
+    // Update obstacles
     obstacles.forEach((obs) => {
         obs.x -= obstacleSpeed;
     });
 
     if (obstacles.length > 0 && obstacles[0].x + obstacleWidth < 0) {
         obstacles.splice(0, 2);
-        score++;
     }
 
     if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 200) {
         createObstacle();
     }
 
+    // Check collisions
     obstacles.forEach((obs) => {
         if (
             copterY < obs.y + obs.height &&
-            copterY + copterSize > obs.y &&
-            50 < obs.x + obstacleWidth &&
-            50 + copterSize > obs.x
+            copterY + copterSize.height > obs.y &&
+            100 < obs.x + obstacleWidth &&
+            100 + copterSize.width > obs.x
         ) {
             resetGame();
         }
     });
+
+    // Update distance
+    distance++;
+    if (distance > bestScore) {
+        bestScore = distance;
+    }
+
+    document.getElementById('distance').innerText = distance;
+    document.getElementById('best').innerText = bestScore;
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = 'red';
-    ctx.fillRect(50, copterY, copterSize, copterSize);
+    // Draw helicopter
+    ctx.drawImage(helicopterImg, 100, copterY, copterSize.width, copterSize.height);
 
+    // Draw obstacles
     ctx.fillStyle = 'green';
     obstacles.forEach((obs) => {
         ctx.fillRect(obs.x, obs.y, obstacleWidth, obs.height);
     });
-
-    document.getElementById('score').innerText = `Score: ${score}`;
 }
 
 function gameLoop() {
     update();
     draw();
-    if (gameRunning) {
-        requestAnimationFrame(gameLoop);
-    }
+    requestAnimationFrame(gameLoop);
 }
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
-        if (!gameRunning) {
-            startGame();
-        }
         copterSpeed = lift;
     }
 });
 
+// Initialize game
 resetGame();
+gameLoop();
