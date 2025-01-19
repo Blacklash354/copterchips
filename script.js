@@ -1,4 +1,4 @@
-// Copter Game Clone with Improved Obstacles and Mouse Control
+// Copter Game Clone with Adjustments for Smoother Flying and UI Fixes
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -12,27 +12,22 @@ helicopterImg.src = 'assets/images/helicopter.png';
 // Game variables
 let copterY = canvas.height / 2;
 let copterSpeed = 0;
-const gravity = 0.5;
-const lift = -10;
+const gravity = 0.3;
+const lift = -6; // Reduced lift for smoother flying
 const copterSize = { width: 80, height: 40 };
 let distance = 0;
 let bestScore = 0;
 let gameRunning = false;
 let isMousePressed = false;
 const obstacles = [];
-const obstacleWidth = 50;
-const obstacleGap = 200;
+const obstacleWidth = 70; // Wider obstacles
+const obstacleGap = 180; // Adjusted gap size
 const obstacleSpeed = 3;
 
 function createObstacle() {
     const height = Math.random() * (canvas.height - obstacleGap - 100) + 50;
-    obstacles.push({ x: canvas.width, y: 0, height, color: getRandomColor() });
-    obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap, color: getRandomColor() });
-}
-
-function getRandomColor() {
-    const colors = ['#00FF00', '#00CC00', '#009900', '#66FF66'];
-    return colors[Math.floor(Math.random() * colors.length)];
+    obstacles.push({ x: canvas.width, y: 0, height, color: '#00FF00' });
+    obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap, color: '#00FF00' });
 }
 
 function resetGame() {
@@ -41,11 +36,13 @@ function resetGame() {
     obstacles.length = 0;
     distance = 0;
     gameRunning = false;
+    document.getElementById('startButton').style.display = 'block';
     createObstacle();
 }
 
 function startGame() {
     gameRunning = true;
+    document.getElementById('startButton').style.display = 'none';
     gameLoop();
 }
 
@@ -54,7 +51,7 @@ function update() {
 
     // Apply gravity or lift based on mouse press
     if (isMousePressed) {
-        copterSpeed = lift;
+        copterSpeed += lift / 20; // Smooth lift
     } else {
         copterSpeed += gravity;
     }
@@ -96,8 +93,8 @@ function update() {
         bestScore = distance;
     }
 
-    document.getElementById('distance').innerText = distance;
-    document.getElementById('best').innerText = bestScore;
+    document.getElementById('distance').innerText = `DISTANCE: ${distance}`;
+    document.getElementById('best').innerText = `BEST: ${bestScore}`;
 }
 
 function draw() {
@@ -140,6 +137,9 @@ window.addEventListener('mousedown', () => {
 window.addEventListener('mouseup', () => {
     isMousePressed = false;
 });
+
+// Add start button functionality
+document.getElementById('startButton').addEventListener('click', startGame);
 
 // Initialize game
 resetGame();
