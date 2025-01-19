@@ -1,4 +1,4 @@
-// Copter Game Clone with Styled Obstacles
+// Copter Game Clone with Smaller Obstacles
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -22,8 +22,8 @@ let bestScore = 0;
 let gameRunning = false;
 let isMousePressed = false;
 const obstacles = [];
-const obstacleWidth = 70; // Styled obstacle width
-const obstacleGap = 180; // Adjusted gap size
+const obstacleWidth = 40; // Smaller obstacle width
+const obstacleGap = 140; // Reduced gap size
 const obstacleSpeed = 3;
 
 function createObstacle() {
