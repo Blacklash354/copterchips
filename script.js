@@ -1,9 +1,9 @@
-// Fullscreen Copter Game Clone with Mouse Control
+// Copter Game Clone with UI Elements and Screen Adjustments
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = 800; // Fixed width
+canvas.height = 600; // Fixed height
 
 // Images
 const helicopterImg = new Image();
@@ -24,7 +24,7 @@ const obstacleGap = 200;
 const obstacleSpeed = 3;
 
 function createObstacle() {
-    const height = Math.random() * (canvas.height - obstacleGap);
+    const height = Math.random() * (canvas.height - obstacleGap - 100) + 50;
     obstacles.push({ x: canvas.width, y: 0, height });
     obstacles.push({ x: canvas.width, y: height + obstacleGap, height: canvas.height - height - obstacleGap });
 }
@@ -50,7 +50,7 @@ function update() {
     copterY += copterSpeed;
 
     // Check boundaries
-    if (copterY < 0 || copterY + copterSize.height > canvas.height) {
+    if (copterY < 50 || copterY + copterSize.height > canvas.height - 50) {
         resetGame();
     }
 
@@ -92,6 +92,11 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw top and bottom borders
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 0, canvas.width, 50); // Top border
+    ctx.fillRect(0, canvas.height - 50, canvas.width, 50); // Bottom border
+
     // Draw helicopter
     ctx.drawImage(helicopterImg, 100, copterY, copterSize.width, copterSize.height);
 
@@ -100,6 +105,12 @@ function draw() {
     obstacles.forEach((obs) => {
         ctx.fillRect(obs.x, obs.y, obstacleWidth, obs.height);
     });
+
+    // Draw score UI
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    ctx.fillText(`DISTANCE: ${distance}`, 10, 30);
+    ctx.fillText(`BEST: ${bestScore}`, 10, canvas.height - 20);
 }
 
 function gameLoop() {
@@ -117,12 +128,6 @@ window.addEventListener('mousedown', () => {
 
 window.addEventListener('mouseup', () => {
     copterSpeed += gravity; // Resume gravity when mouse is released
-});
-
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    resetGame();
 });
 
 // Initialize game
