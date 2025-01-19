@@ -1,7 +1,9 @@
+// Fullscreen Copter Game Clone with Mouse Control
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = 800;
-canvas.height = 400;
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 // Images
 const helicopterImg = new Image();
@@ -15,10 +17,10 @@ const lift = -10;
 const copterSize = { width: 80, height: 40 };
 let distance = 0;
 let bestScore = 0;
-
+let gameRunning = false;
 const obstacles = [];
 const obstacleWidth = 50;
-const obstacleGap = 150;
+const obstacleGap = 200;
 const obstacleSpeed = 3;
 
 function createObstacle() {
@@ -32,10 +34,18 @@ function resetGame() {
     copterSpeed = 0;
     obstacles.length = 0;
     distance = 0;
+    gameRunning = false;
     createObstacle();
 }
 
+function startGame() {
+    gameRunning = true;
+    gameLoop();
+}
+
 function update() {
+    if (!gameRunning) return;
+
     copterSpeed += gravity;
     copterY += copterSpeed;
 
@@ -53,7 +63,7 @@ function update() {
         obstacles.splice(0, 2);
     }
 
-    if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 200) {
+    if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 300) {
         createObstacle();
     }
 
@@ -95,15 +105,25 @@ function draw() {
 function gameLoop() {
     update();
     draw();
-    requestAnimationFrame(gameLoop);
+    if (gameRunning) {
+        requestAnimationFrame(gameLoop);
+    }
 }
 
-window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
-        copterSpeed = lift;
-    }
+window.addEventListener('mousedown', () => {
+    if (!gameRunning) startGame();
+    copterSpeed = lift;
+});
+
+window.addEventListener('mouseup', () => {
+    copterSpeed += gravity; // Resume gravity when mouse is released
+});
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    resetGame();
 });
 
 // Initialize game
 resetGame();
-gameLoop();
