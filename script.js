@@ -1,4 +1,4 @@
-// Copter Game Clone with Smaller Obstacles
+// Copter Game Clone with Green Obstacles
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -8,8 +8,6 @@ canvas.height = 600; // Fixed height
 // Images
 const helicopterImg = new Image();
 helicopterImg.src = 'assets/images/helicopter.png';
-const obstacleTexture = new Image();
-obstacleTexture.src = 'assets/images/obstacle.png';
 
 // Game variables
 let copterY = canvas.height / 2;
@@ -112,12 +110,8 @@ function draw() {
 
     // Draw obstacles
     obstacles.forEach((obs) => {
-        if (obstacleTexture.complete) {
-            ctx.drawImage(obstacleTexture, obs.x, obs.y, obstacleWidth, obs.height);
-        } else {
-            ctx.fillStyle = 'green';
-            ctx.fillRect(obs.x, obs.y, obstacleWidth, obs.height);
-        }
+        ctx.fillStyle = 'green';
+        ctx.fillRect(obs.x, obs.y, obstacleWidth, obs.height);
     });
 
     // Draw score UI
